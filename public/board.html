@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title id="boardTitle">Доска</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="/css/board.css">
+</head>
+<body>
+    <!-- Улучшенный логотип GBoard с градиентным эффектом -->
+    <div id="gboardLogo" class="gboard-logo">
+        <a href="/" class="gboard-link">GBoard</a>
+    </div>
+    
+    <div id="controls">
+        <input type="color" id="colorPicker" value="#000000">
+        <div style="display: inline-block; vertical-align: middle;">
+            <input type="range" id="sizeSlider" min="1" max="50" value="5">
+            <span id="sizeValue">5px</span>
+        </div>
+        <button id="eraserBtn">Ластик</button>
+        <button id="brushBtn">Кисть</button>
+        <button id="textBtn">Текст</button>
+        <button id="clearBtn">Очистить</button>
+        <button id="moveBtn">Перемещение</button>
+        <button id="zoomBtn">Изменение масштаба</button>
+        <button id="inviteBtn" class="button">Пригласить</button>
+        <button id="toggleUsersBtn" class="button">Пользователи</button>
+        <span id="userCounter" style="margin-left: 20px;">Подключение...</span>
+    </div>
+    
+    <div id="canvasWrapper">
+        <div id="zoomSliderContainer">
+            <input type="range" id="zoomSlider" min="0.5" max="2" step="0.1" value="1">
+            <span id="zoomValue">x1.0</span>
+        </div>
+        <div id="canvasContainer">
+            <canvas id="drawingBoard" width="1600" height="1200"></canvas>
+            <input type="text" id="textOverlay">
+        </div>
+    </div>
+
+    <!-- Новая панель инструментов в виде язычков -->
+    <div class="tools-panel">
+        <div class="tool-tab" id="brushTab" data-tool="brush">
+            <div class="tool-icon brush-icon"></div>
+        </div>
+        <div class="tool-tab" id="eraserTab" data-tool="eraser">
+            <div class="tool-icon eraser-icon"></div>
+        </div>
+        <div class="tool-tab" id="moveTab" data-tool="move">
+            <div class="tool-icon move-icon"></div>
+        </div>
+        <div class="tool-tab" id="textTab" data-tool="text">
+            <div class="tool-icon text-icon"></div>
+        </div>
+        <div class="tool-tab" id="zoomTab" data-tool="zoom">
+            <div class="tool-icon zoom-icon"></div>
+        </div>
+    </div>
+
+    <!-- Контекстные панели для инструментов -->
+    <div class="context-panel" id="brushPanel">
+        <div class="panel-header">
+            <button class="toggle-context-btn"><</button>
+            <h3>Настройки кисти</h3>
+        </div>
+        <div class="panel-settings">
+            <label for="brushSizeSlider">Размер кисти</label>
+            <input type="range" id="brushSizeSlider" min="1" max="50" value="5">
+            <label for="brushColorPicker">Цвет</label>
+            <input type="color" id="brushColorPicker" value="#000000">
+        </div>
+    </div>
+
+    <div class="context-panel" id="eraserPanel">
+        <div class="panel-header">
+            <button class="toggle-context-btn"><</button>
+            <h3>Настройки ластика</h3>
+        </div>
+        <div class="panel-settings">
+            <label for="eraserSizeSlider">Размер ластика</label>
+            <input type="range" id="eraserSizeSlider" min="1" max="50" value="10">
+            <button id="clearBoardBtn">Очистить доску</button>
+        </div>
+    </div>
+
+    <div class="context-panel" id="textPanel">
+        <div class="panel-header">
+            <button class="toggle-context-btn"><</button>
+            <h3>Настройки текста</h3>
+        </div>
+        <div class="panel-settings">
+            <label for="textSizeSlider">Размер текста</label>
+            <input type="range" id="textSizeSlider" min="8" max="72" value="16">
+            <label for="textColorPicker">Цвет текста</label>
+            <input type="color" id="textColorPicker" value="#000000">
+        </div>
+    </div>
+
+    <div class="context-panel" id="zoomPanel">
+        <div class="panel-header">
+            <button class="toggle-context-btn"><</button>
+            <h3>Настройки масштаба</h3>
+        </div>
+        <div class="panel-settings">
+            <label for="zoomLevelSlider">Масштаб</label>
+            <input type="range" id="zoomLevelSlider" min="0.5" max="2" step="0.1" value="1">
+            <span id="zoomLevelValue">x1.0</span>
+        </div>
+    </div>
+
+    <div id="usersPanel">
+        <div class="panel-header">
+            <button id="togglePanelBtn" class="toggle-btn">></button>
+            <h3 id="usersPanelTitle">Пользователи</h3>
+        </div>
+        <div class="panel-content">
+            <div>
+                <h4>Онлайн</h4>
+                <div id="usersOnlineList"></div>
+            </div>
+            <div class="offline-section">
+                <h4>Офлайн</h4>
+                <div id="usersOfflineList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Добавляем модальное окно приглашения пользователей -->
+    <div id="inviteModal" class="modal">
+        <div class="modal-content">
+            <h2>Пригласить пользователей</h2>
+            <p>Код доступа к доске: <strong id="boardCodeDisplay"></strong></p>
+            <p>Отправь другим пользователям этот код, чтобы они могли присоединиться к доске</p>
+            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                <button class="modal-button" onclick="copyInviteCode()">Скопировать код</button>
+                <button class="modal-button" onclick="closeModal('inviteModal')">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Добавляем модальное окно -->
+    <div id="sessionModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Сеанс завершен</h2>
+            <p>Ваш сеанс на странице окончен. Пожалуйста, перезагрузите страницу для продолжения работы.</p>
+        </div>
+    </div>
+
+    <!-- Добавляем модальное окно для бана пользователей -->
+    <div id="banModal" class="modal">
+        <div class="modal-content">
+            <h2>Заблокировать пользователя</h2>
+            <p>Вы уверены, что хотите заблокировать пользователя <span id="banUserName"></span>?</p>
+            <p>После блокировки пользователь <strong>не сможет</strong> присоединиться к этой доске.</p>
+            <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                <button class="modal-button" style="background-color: #f44336;" onclick="confirmBanUser()">Заблокировать</button>
+                <button class="modal-button" style="background-color: #9e9e9e;" onclick="closeModal('banModal')">Отмена</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Добавляем модальное окно для уведомления о бане -->
+    <div id="bannedNotificationModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Вы заблокированы</h2>
+            <p>Владелец доски заблокировал вам доступ к этой доске.</p>
+            <button class="modal-button" onclick="window.location.href = '/'">Вернуться на главную</button>
+        </div>
+    </div>
+
+    <script src="/js/board.js"></script>
+</body>
+</html>

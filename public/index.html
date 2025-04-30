@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Главная страница "Онлайн доски"</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="/css/index.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="site-logo">GBoard</div>
+        <div id="userProfile" class="user-profile">
+            <div id="userAvatar" class="avatar default-avatar"></div>
+            <span id="userName">Вход/Регистрация</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="welcome-container" id="welcomeContainer">
+            <!-- Контент будет добавлен динамически -->
+        </div>
+    </div>
+
+    <!-- Универсальное модальное окно входа/регистрации -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('authModal')">&times;</span>
+            
+            <!-- Переключатель между входом и регистрацией -->
+            <div class="auth-tabs">
+                <button class="auth-tab-btn active" id="loginTabBtn" onclick="switchAuthTab('login')">Вход</button>
+                <button class="auth-tab-btn" id="registerTabBtn" onclick="switchAuthTab('register')">Регистрация</button>
+            </div>
+            
+            <!-- Форма входа -->
+            <div id="loginTab" class="auth-tab-content">
+                <h2>Вход</h2>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Имя пользователя:</label>
+                        <input type="text" name="full_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Пароль:</label>
+                        <input type="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Войти</button>
+                    <div class="error" id="loginError"></div>
+                </form>
+            </div>
+            
+            <!-- Форма регистрации -->
+            <div id="registerTab" class="auth-tab-content" style="display:none">
+                <h2>Регистрация</h2>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label>Имя пользователя:</label>
+                        <input type="text" name="full_name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Пароль:</label>
+                        <input type="password" name="password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+                    <div class="error" id="registerError"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно создания доски -->
+    <div id="createBoardModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('createBoardModal')">&times;</span>
+            <h2>Создать новую доску</h2>
+            <form id="createBoardForm">
+                <div class="form-group">
+                    <label>Название доски:</label>
+                    <input type="text" name="boardName" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Создать</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно присоединения к доске -->
+    <div id="joinBoardModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('joinBoardModal')">&times;</span>
+            <h2>Присоединиться к доске</h2>
+            <form id="joinBoardForm">
+                <div class="form-group">
+                    <label>Код доски:</label>
+                    <input type="text" name="boardCode" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Присоединиться</button>
+                <div class="error" id="joinBoardError"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно профиля -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('profileModal')">&times;</span>
+            <h2>Профиль пользователя</h2>
+            <form id="profileForm">
+                <div class="avatar-upload">
+                    <div id="profileAvatarPreview" class="avatar-preview default-avatar"></div>
+                    <label for="avatarInput" class="upload-btn">Выбрать изображение</label>
+                    <input type="file" id="avatarInput" accept="image/jpeg, image/png, image/gif, image/webp">
+                    <small>Рекомендуемый размер: 256x256 пикселей</small>
+                </div>
+                <div class="form-group">
+                    <label>Имя пользователя:</label>
+                    <input type="text" name="username" id="profileUsername" required>
+                </div>
+                <div class="profile-buttons">
+                    <button type="submit" class="btn btn-primary">Сохранить</button>
+                    <button type="button" class="btn btn-secondary" onclick="logout()">Выйти</button>
+                </div>
+                <div class="error" id="profileError"></div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/index.js"></script>
+</body>
+</html>

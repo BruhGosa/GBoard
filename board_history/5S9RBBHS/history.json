@@ -1,0 +1,263 @@
+[
+  {
+    "type": "draw",
+    "lastX": 413,
+    "lastY": 426,
+    "x": 414,
+    "y": 429,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 414,
+    "lastY": 429,
+    "x": 414,
+    "y": 431,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 414,
+    "lastY": 431,
+    "x": 417,
+    "y": 438,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 417,
+    "lastY": 438,
+    "x": 424,
+    "y": 445,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 424,
+    "lastY": 445,
+    "x": 439,
+    "y": 454,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 439,
+    "lastY": 454,
+    "x": 464,
+    "y": 462,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 464,
+    "lastY": 462,
+    "x": 509,
+    "y": 468,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 509,
+    "lastY": 468,
+    "x": 548,
+    "y": 468,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 548,
+    "lastY": 468,
+    "x": 576,
+    "y": 463,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 576,
+    "lastY": 463,
+    "x": 589,
+    "y": 458,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 589,
+    "lastY": 458,
+    "x": 589,
+    "y": 457,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 589,
+    "lastY": 457,
+    "x": 582,
+    "y": 455,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 582,
+    "lastY": 455,
+    "x": 563,
+    "y": 452,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 563,
+    "lastY": 452,
+    "x": 531,
+    "y": 451,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 531,
+    "lastY": 451,
+    "x": 496,
+    "y": 451,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 496,
+    "lastY": 451,
+    "x": 466,
+    "y": 453,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 466,
+    "lastY": 453,
+    "x": 452,
+    "y": 455,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 452,
+    "lastY": 455,
+    "x": 450,
+    "y": 456,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 450,
+    "lastY": 456,
+    "x": 470,
+    "y": 459,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 470,
+    "lastY": 459,
+    "x": 499,
+    "y": 461,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 499,
+    "lastY": 461,
+    "x": 534,
+    "y": 460,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 534,
+    "lastY": 460,
+    "x": 557,
+    "y": 456,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 557,
+    "lastY": 456,
+    "x": 562,
+    "y": 456,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 562,
+    "lastY": 456,
+    "x": 554,
+    "y": 455,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 554,
+    "lastY": 455,
+    "x": 533,
+    "y": 454,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 533,
+    "lastY": 454,
+    "x": 513,
+    "y": 454,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 513,
+    "lastY": 454,
+    "x": 498,
+    "y": 454,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 498,
+    "lastY": 454,
+    "x": 491,
+    "y": 454,
+    "color": "#000000",
+    "size": "5"
+  },
+  {
+    "type": "draw",
+    "lastX": 491,
+    "lastY": 454,
+    "x": 490,
+    "y": 454,
+    "color": "#000000",
+    "size": "5"
+  }
+]
