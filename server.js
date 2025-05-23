@@ -1,9 +1,20 @@
+require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const cookieParser = require('cookie-parser');
 const path = require('path');
 const logger = require('./utils/logger');
 const http = require('http');
+
+// Логируем переменные окружения для отладки
+logger.info('Environment variables:', {
+    DBUSER: process.env.DBUSER,
+    DBPASS: process.env.DBPASS,
+    DBHOST: process.env.DBHOST,
+    DBNAME: process.env.DBNAME,
+    APP_PORT: process.env.APP_PORT,
+    APP_IP: process.env.APP_IP
+});
 
 // Инициализация приложения
 const app = express();

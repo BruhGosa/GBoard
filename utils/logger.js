@@ -34,26 +34,39 @@ const formatMessage = (level, message, details = null) => {
     return JSON.stringify(logMessage) + '\n';
 };
 
+// Функция для вывода в консоль
+const consoleOutput = (level, message, details = null) => {
+    const timestamp = `${getDate()} ${getTime()}`;
+    console.log(`[${timestamp}] ${level}: ${message}`);
+    if (details) {
+        console.log('Details:', details);
+    }
+};
+
 // Основные функции логирования
 const logger = {
     info: (message, details = null) => {
         const logStream = getLogStream();
         logStream.write(formatMessage('INFO', message, details));
+        consoleOutput('INFO', message, details);
     },
 
     error: (message, details = null) => {
         const logStream = getLogStream();
         logStream.write(formatMessage('ERROR', message, details));
+        consoleOutput('ERROR', message, details);
     },
 
     warn: (message, details = null) => {
         const logStream = getLogStream();
         logStream.write(formatMessage('WARN', message, details));
+        consoleOutput('WARN', message, details);
     },
 
     debug: (message, details = null) => {
         const logStream = getLogStream();
         logStream.write(formatMessage('DEBUG', message, details));
+        consoleOutput('DEBUG', message, details);
     },
 
     request: (req, message = 'HTTP Request') => {

@@ -3,6 +3,9 @@ const { pool } = require('../models/db');
 const boardModel = require('../models/board');
 const logger = require('../utils/logger');
 
+// Для хранения экземпляра WebSocket-сервера
+let wssInstance = null;
+
 // Инициализация WebSocket сервера
 function initWebSocketServer(server, sessionParser) {
     const wss = new WebSocket.Server({ 
@@ -20,10 +23,18 @@ function initWebSocketServer(server, sessionParser) {
         pingTimeout: 105 * 60 * 1000 
     });
 
+    // Сохраняем экземпляр для использования в других модулях
+    wssInstance = wss;
+
     setupConnectionHandlers(wss);
     setupPingPong(wss);
 
     return wss;
+}
+
+// Функция для получения экземпляра WebSocket-сервера
+function getWss() {
+    return wssInstance;
 }
 
 // Настройка обработчиков подключения
@@ -357,6 +368,10 @@ async function handleUndoRedo(wss, ws, data) {
     }
 }
 
+// Экспортируем функции
 module.exports = {
-    initWebSocketServer
+    initWebSocketServer,
+    getWss,
+    broadcastToAll,
+    broadcastUsersList
 }; 

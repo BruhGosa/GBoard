@@ -1,6 +1,72 @@
+// Глобальные переменные
+let isDrawing = false;
+let lastX = 0;
+let lastY = 0;
+let isLoading = false;
+let isEraser = false;
+let isTextMode = false;
+let textPosition = null;
+let originalCanvas = null; // Для хранения состояния холста до начала ввода текста
+let isOwner = false; // Флаг владельца доски
+let sessionTimeout;
+const SESSION_DURATION = 105 * 60 * 1000; // 1 час 45 минут
+let banningUserId = null; // Для хранения ID пользователя, которого собираются забанить
+let globalAvatars = {}; // Глобальное хранилище аватарок
+let isMoveMode = false;
+let isDragging = false;
+let currentScale = 1;
+let currentX = 0;
+let currentY = 0;
+
+// Инициализация переменных для нового интерфейса
+let currentTool = 'brush';
+let brushSize = 5;
+let eraserSize = 10;
+let textSize = 16;
+let brushColor = '#000000';
+let textColor = '#000000';
+
+// Константы для ограничения перемещения
+const MAX_OFFSET = 1000; // Максимальное смещение в пикселях
+const MOVE_SENSITIVITY = 0.5; // Увеличиваем чувствительность перемещения
+
+
+const canvas = document.getElementById('drawingBoard');
+const ctx = canvas.getContext('2d');
+const canvasContainer = document.getElementById('canvasContainer');
+const canvasWrapper = document.getElementById('canvasWrapper');
+const moveBtn = document.getElementById('moveBtn');
+const zoomBtn = document.getElementById('zoomBtn');
+const zoomSlider = document.getElementById('zoomSlider');
+const zoomValue = document.getElementById('zoomValue');
+const zoomSliderContainer = document.getElementById('zoomSliderContainer');
+const colorPicker = document.getElementById('colorPicker');
+const sizeSlider = document.getElementById('sizeSlider');
+const sizeValue = document.getElementById('sizeValue');
+const clearBtn = document.getElementById('clearBtn');
+const eraserBtn = document.getElementById('eraserBtn');
+const brushBtn = document.getElementById('brushBtn');
+const textBtn = document.getElementById('textBtn');
+const textOverlay = document.getElementById('textOverlay');
+const userCounter = document.getElementById('userCounter');
+
+
 // Функции для работы с модальными окнами (глобальная область видимости)
 function openModal(modalId) {
-    document.getElementById(modalId).style.display = 'block';
+    const modal = document.getElementById(modalId);
+    
+    // Если открывается модальное окно приглашения, устанавливаем код доски
+    if (modalId === 'inviteModal') {
+        const boardCodeDisplay = document.getElementById('boardCodeDisplay');
+        if (boardCodeDisplay) {
+            // Получаем актуальный код доски
+            const boardCode = window.location.pathname.split('/').pop();
+            console.log('Устанавливаем код доски:', boardCode);
+            boardCodeDisplay.textContent = boardCode;
+        }
+    }
+    
+    modal.style.display = 'block';
 }
 
 function closeModal(modalId) {
@@ -17,7 +83,11 @@ window.onclick = function(event) {
 // Глобальная функция для копирования кода приглашения
 function copyInviteCode() {
     try {
+        // Обновляем отображение кода доски в модальном окне
+        updateBoardCodeDisplay();
+        
         const boardCode = window.location.pathname.split('/').pop();
+        console.log('Копирование кода доски:', boardCode);
         const inviteText = `Онлайн доска: http://gosoboard.na4u.ru/ . Код доступа к доске ${boardCode}. Для того чтобы подключиться к доске нужно сначала войти в систему.`;
         
         // Создаем временный элемент textarea
@@ -43,67 +113,6 @@ function copyInviteCode() {
     }
 }
 
-const canvas = document.getElementById('drawingBoard');
-const ctx = canvas.getContext('2d');
-const canvasContainer = document.getElementById('canvasContainer');
-const canvasWrapper = document.getElementById('canvasWrapper');
-const moveBtn = document.getElementById('moveBtn');
-const zoomBtn = document.getElementById('zoomBtn');
-const zoomSlider = document.getElementById('zoomSlider');
-const zoomValue = document.getElementById('zoomValue');
-const zoomSliderContainer = document.getElementById('zoomSliderContainer');
-const colorPicker = document.getElementById('colorPicker');
-const sizeSlider = document.getElementById('sizeSlider');
-const sizeValue = document.getElementById('sizeValue');
-const clearBtn = document.getElementById('clearBtn');
-const eraserBtn = document.getElementById('eraserBtn');
-const brushBtn = document.getElementById('brushBtn');
-const textBtn = document.getElementById('textBtn');
-const textOverlay = document.getElementById('textOverlay');
-const userCounter = document.getElementById('userCounter');
-
-// Глобальные переменные
-let isDrawing = false;
-let lastX = 0;
-let lastY = 0;
-let isLoading = false;
-let isEraser = false;
-let isTextMode = false;
-let textPosition = null;
-let originalCanvas = null; // Для хранения состояния холста до начала ввода текста
-let isOwner = false; // Флаг владельца доски
-let sessionTimeout;
-const SESSION_DURATION = 105 * 60 * 1000; // 1 час 45 минут
-let banningUserId = null; // Для хранения ID пользователя, которого собираются забанить
-let globalAvatars = {}; // Глобальное хранилище аватарок
-let isMoveMode = false;
-let isDragging = false;
-let currentScale = 1;
-let currentX = 0;
-let currentY = 0;
-
-// Флаги для отслеживания доступности отмены/повтора
-let canUndo = false;
-let canRedo = false;
-
-// Переменные для хранения истории действий
-let actionHistory = [];
-let currentHistoryIndex = -1;
-const MAX_HISTORY_LENGTH = 25; // Максимальное количество действий в истории
-let userId = null; // ID пользователя для идентификации действий
-
-// Инициализация переменных для нового интерфейса
-let currentTool = 'brush'; // По умолчанию выбрана кисть
-let brushSize = 5;
-let eraserSize = 10;
-let textSize = 16;
-let brushColor = '#000000';
-let textColor = '#000000';
-
-// Константы для ограничения перемещения
-const MAX_OFFSET = 1000; // Максимальное смещение в пикселях
-const MOVE_SENSITIVITY = 0.5; // Увеличиваем чувствительность перемещения
-
 // Функция для логирования на клиенте
 function logToFile(message, type = 'info') {
     fetch('/log', {
@@ -120,6 +129,18 @@ function logToFile(message, type = 'info') {
 
 // Получаем код доски из URL
 const boardCode = window.location.pathname.split('/').pop();
+
+// Функция для обновления отображения кода доски в модальном окне
+function updateBoardCodeDisplay() {
+    const boardCodeDisplay = document.getElementById('boardCodeDisplay');
+    if (boardCodeDisplay) {
+        console.log('Обновление кода доски в модальном окне:', boardCode);
+        boardCodeDisplay.textContent = boardCode;
+    }
+}
+
+// Устанавливаем код доски в модальное окно сразу после загрузки страницы
+document.addEventListener('DOMContentLoaded', updateBoardCodeDisplay);
 
 // Создаем WebSocket соединение с кодом доски
 // Используем относительный URL, чтобы браузер автоматически использовал 
@@ -153,20 +174,18 @@ ws.onmessage = function(event) {
     const data = JSON.parse(event.data);
     console.log('Получено сообщение от сервера:', data);
     
-    resetSessionTimer(); // Сбрасываем таймер при получении сообщений
+    resetSessionTimer();
     
     if (data.type === 'init') {
         console.log('Получены данные инициализации:', data);
-        // Обновляем название доски
         updateBoardName(data.boardName);
         
-        // Сохраняем ID пользователя для истории действий
         userId = data.userId;
         
         // Загружаем историю рисования
         if (data.history && data.history.length > 0) {
             console.log('Loading drawing history:', data.history.length, 'items');
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Очищаем холст перед загрузкой
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             data.history.forEach(item => {
                 if (item.type === 'draw') {
                     drawRemote(item);
@@ -176,19 +195,12 @@ ws.onmessage = function(event) {
             });
         }
         
-        // Обрабатываем историю рисования
-        drawingHistory = data.history;
         isOwner = data.isOwner;
         
-        // Обновляем доступность кнопок отмены/повтора
-        updateUndoRedoButtons();
-        
-        // Показываем кнопки управления, если пользователь - владелец доски
         if (isOwner) {
             document.getElementById('inviteBtn').style.display = '';
         }
         
-        // Сохраняем аватарки пользователей при инициализации
         if (data.allUsers) {
             data.allUsers.forEach(user => {
                 if (user.avatar_url) {
@@ -197,15 +209,12 @@ ws.onmessage = function(event) {
             });
         }
         
-        // Обновляем список пользователей
         if (data.allUsers && data.users) {
             updateUsersLists(data.users, data.allUsers);
         } else {
-            // Загружаем всех пользователей, если они не были отправлены с сервера
             fetchAllBoardUsers();
         }
         
-        // Настраиваем права доступа
         if (!data.canDraw && !data.isOwner) {
             canvas.style.pointerEvents = 'none';
             colorPicker.disabled = true;
@@ -214,6 +223,10 @@ ws.onmessage = function(event) {
             brushBtn.disabled = true;
             textBtn.disabled = true;
             clearBtn.disabled = true;
+            document.querySelector('.tools-panel').classList.add('hidden');
+            selectMoveTool();
+        } else {
+            document.querySelector('.tools-panel').classList.remove('hidden');
         }
     } else if (data.type === 'users_update') {
         // Сохраняем аватарки при обновлении списка пользователей
@@ -246,65 +259,11 @@ ws.onmessage = function(event) {
         }
     } else if (data.type === 'clear') {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        // Сбрасываем флаги отмены/повтора после очистки
-        canUndo = false;
-        canRedo = false;
-        updateUndoRedoButtons();
     } else if (data.type === 'text') {
         drawText(data);
     } else if (data.type === 'draw') {
-        // Отрисовываем линию от другого пользователя
         drawRemote(data);
-    } else if (data.type === 'history_update') {
-        // Обновляем холст на основе обновленной истории
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        if (data.history && data.history.length > 0) {
-            data.history.forEach(item => {
-                if (item.type === 'draw') {
-                    drawRemote(item);
-                } else if (item.type === 'text') {
-                    drawText(item);
-                }
-            });
-        }
-        
-        // Обновляем состояние кнопок в зависимости от действия
-        if (data.action === 'undo') {
-            canUndo = true; // Разрешаем дальнейшую отмену
-            canRedo = true; // Активируем возможность повтора
-        } else if (data.action === 'redo') {
-            canUndo = true; // Активируем возможность отмены
-            canRedo = true; // Разрешаем дальнейший повтор
-        }
-        
-        updateUndoRedoButtons();
-    } else if (data.type === 'history_update_failed') {
-        // Если отмена или повтор не удались, восстанавливаем состояние кнопок
-        canUndo = true;
-        canRedo = true;
-        updateUndoRedoButtons();
-        console.log('История не обновлена:', data.message);
-        
-        // Можно показать уведомление пользователю
-        const notification = document.createElement('div');
-        notification.className = 'notification';
-        notification.textContent = data.message;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #ff9800;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            z-index: 1000;
-        `;
-        document.body.appendChild(notification);
-        setTimeout(() => notification.remove(), 3000);
     } else if (data.type === 'access_update') {
-        // Обновляем права доступа без перезагрузки
         if (data.canDraw) {
             canvas.style.pointerEvents = 'auto';
             colorPicker.disabled = false;
@@ -313,6 +272,8 @@ ws.onmessage = function(event) {
             brushBtn.disabled = false;
             textBtn.disabled = false;
             clearBtn.disabled = false;
+            document.querySelector('.tools-panel').classList.remove('hidden');
+            selectMoveTool();
         } else {
             canvas.style.pointerEvents = 'none';
             colorPicker.disabled = true;
@@ -321,34 +282,21 @@ ws.onmessage = function(event) {
             brushBtn.disabled = true;
             textBtn.disabled = true;
             clearBtn.disabled = true;
+            document.querySelector('.tools-panel').classList.add('hidden');
+            selectMoveTool();
         }
         
-        // Показываем уведомление
         const notification = document.createElement('div');
         notification.textContent = `Права доступа ${data.canDraw ? 'разрешены' : 'запрещены'}`;
-        notification.style.cssText = `
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #4CAF50;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            z-index: 1000;
-        `;
+        notification.className = 'notification';
         document.body.appendChild(notification);
         setTimeout(() => notification.remove(), 3000);
     } else if (data.type === 'banned') {
-        // Показываем модальное окно с информацией о бане
         document.getElementById('bannedNotificationModal').style.display = 'block';
-        
-        // Отключаем все интерактивные элементы
         canvas.style.pointerEvents = 'none';
         document.querySelectorAll('button, input, select').forEach(el => {
             el.disabled = true;
         });
-        
-        // Перенаправляем на страницу бана через 2 секунды
         setTimeout(() => {
             window.location.href = `/ban.html?board=${boardCode}`;
         }, 2000);
@@ -381,12 +329,11 @@ function draw(e) {
     let x, y;
     
     if (e.type.includes('touch')) {
-        // Для touch-событий используем getBoundingClientRect для точного расчета координат
-        x = e.touches[0].clientX - rect.left;
-        y = e.touches[0].clientY - rect.top;
+        x = (e.touches[0].clientX - rect.left) / currentScale;
+        y = (e.touches[0].clientY - rect.top) / currentScale;
     } else {
-        x = e.offsetX;
-        y = e.offsetY;
+        x = e.offsetX / currentScale;
+        y = e.offsetY / currentScale;
     }
     
     ctx.beginPath();
@@ -396,17 +343,16 @@ function draw(e) {
     if (isEraser) {
         ctx.globalCompositeOperation = 'destination-out';
         ctx.strokeStyle = 'rgba(0,0,0,1)';
-        ctx.lineWidth = eraserSize; // Используем размер ластика
+        ctx.lineWidth = eraserSize;
     } else {
         ctx.globalCompositeOperation = 'source-over';
-        ctx.strokeStyle = brushColor; // Используем цвет кисти
-        ctx.lineWidth = brushSize; // Используем размер кисти
+        ctx.strokeStyle = brushColor;
+        ctx.lineWidth = brushSize;
     }
     
     ctx.lineCap = 'round';
     ctx.stroke();
     
-    // Отправляем данные о рисовании
     ws.send(JSON.stringify({
         type: 'draw',
         lastX: lastX,
@@ -420,7 +366,6 @@ function draw(e) {
     
     [lastX, lastY] = [x, y];
     
-    // Восстанавливаем значение globalCompositeOperation после рисования
     if (isEraser) {
         ctx.globalCompositeOperation = 'source-over';
     }
@@ -432,12 +377,11 @@ function startDrawing(e) {
     let x, y;
     
     if (e.type.includes('touch')) {
-        // Для touch-событий используем getBoundingClientRect для точного расчета координат
-        x = e.touches[0].clientX - rect.left;
-        y = e.touches[0].clientY - rect.top;
+        x = (e.touches[0].clientX - rect.left) / currentScale;
+        y = (e.touches[0].clientY - rect.top) / currentScale;
     } else {
-        x = e.offsetX;
-        y = e.offsetY;
+        x = e.offsetX / currentScale;
+        y = e.offsetY / currentScale;
     }
     
     [lastX, lastY] = [x, y];
@@ -447,18 +391,6 @@ function stopDrawing() {
     if (isDrawing) {
         isDrawing = false;
         ctx.globalCompositeOperation = 'source-over';
-        
-        // Добавляем действие в историю для отмены только когда закончили рисовать
-        // а не на каждый пиксель движения мыши
-        if (userId) {
-            markUndoPoint();
-            
-            // Отправляем информацию о завершении действия для истории
-            ws.send(JSON.stringify({
-                type: 'draw_complete',
-                userId: userId
-            }));
-        }
     }
 }
 
@@ -490,14 +422,8 @@ clearBtn.addEventListener('click', () => {
     if (confirm('Вы уверены, что хотите очистить доску?')) {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ws.send(JSON.stringify({
-            type: 'clear',
-            clearHistory: true
+            type: 'clear'
         }));
-        
-        // Сбрасываем флаги отмены/повтора после очистки
-        canUndo = false;
-        canRedo = false;
-        updateUndoRedoButtons();
     }
 });
 
@@ -786,9 +712,6 @@ function drawText(data) {
     
     // Восстанавливаем настройки контекста
     ctx.restore();
-    
-    // Активируем отмену после добавления текста
-    markUndoPoint();
 }
 
 // Добавляем стили
@@ -825,7 +748,6 @@ inviteBtn.style.display = ''; // Показываем кнопку по умол
 
 // Обработчик нажатия кнопки приглашения
 inviteBtn.addEventListener('click', () => {
-    document.getElementById('inviteCodeText').innerText = boardCode;
     openModal('inviteModal');
 });
 
@@ -846,6 +768,19 @@ async function updateUserAccess(userId, canDraw, isOfflineUser = false) {
     try {
         console.log('Updating access for user:', userId, 'canDraw:', canDraw, 'isOffline:', isOfflineUser);
         
+        // Немедленно обновляем текст и стиль кнопки
+        const accessBtn = document.querySelector(`#dropdown-${userId} .access-btn`);
+        if (accessBtn) {
+            accessBtn.textContent = canDraw ? 'Запретить' : 'Разрешить';
+            if (canDraw) {
+                accessBtn.classList.remove('denied');
+            } else {
+                accessBtn.classList.add('denied');
+            }
+            // Обновляем аргумент для следующего вызова функции
+            accessBtn.onclick = () => updateUserAccess(userId, !canDraw, isOfflineUser);
+        }
+        
         const response = await fetch('/update-board-access', {
             method: 'POST',
             headers: {
@@ -863,6 +798,13 @@ async function updateUserAccess(userId, canDraw, isOfflineUser = false) {
             const errorData = await response.json();
             throw new Error(errorData.error || 'Ошибка обновления прав доступа');
         }
+        
+        // Показываем уведомление пользователю
+        const notification = document.createElement('div');
+        notification.textContent = `Права доступа ${canDraw ? 'разрешены' : 'запрещены'}`;
+        notification.className = 'notification';
+        document.body.appendChild(notification);
+        setTimeout(() => notification.remove(), 3000);
         
         // Уведомление будет показано при получении ответа от сервера через WebSocket
         // Списки пользователей также будут обновлены через WebSocket
@@ -1431,9 +1373,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Устанавливаем кисть как активный инструмент по умолчанию
-    document.getElementById('brushTab').classList.add('active');
-    brushPanel.classList.add('show');
+    // Автоматически выбираем инструмент перемещения при загрузке
+    const moveTab = document.getElementById('moveTab');
+    moveTab.classList.add('active');
+    isMoveMode = true;
+    canvasWrapper.classList.add('move-mode');
+    toggleDrawingMode(false);
     
     // Скрываем старую панель управления
     document.getElementById('controls').style.display = 'none';
@@ -1543,8 +1488,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (confirm('Вы уверены, что хотите очистить доску?')) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ws.send(JSON.stringify({
-                type: 'clear',
-                clearHistory: true
+                type: 'clear'
             }));
         }
     });
@@ -1569,120 +1513,11 @@ document.addEventListener('DOMContentLoaded', function() {
     currentScale = parseFloat(zoomLevelSlider.value);
     zoomLevelValue.textContent = `x${currentScale.toFixed(1)}`;
 
-    // Инициализация кнопок отмены и повтора
-    const undoBtn = document.getElementById('undoBtn');
-    const redoBtn = document.getElementById('redoBtn');
-    
-    undoBtn.addEventListener('click', undo);
-    redoBtn.addEventListener('click', redo);
-    
-    // Устанавливаем начальное состояние кнопок
-    canUndo = false;
-    canRedo = false;
-    updateUndoRedoButtons();
-    
     // Сохраняем начальное состояние холста в историю
     setTimeout(() => {
         saveToHistory();
     }, 500); // Задержка для загрузки истории рисования
 
     // Устанавливаем код доски в модальное окно приглашения
-    const boardCodeDisplay = document.getElementById('boardCodeDisplay');
-    if (boardCodeDisplay) {
-        boardCodeDisplay.textContent = boardCode;
-    }
+    updateBoardCodeDisplay();
 });
-
-// Добавляем обработчики горячих клавиш для отмены/повтора
-document.addEventListener('keydown', function(e) {
-    // Ctrl+Z для отмены
-    if (e.ctrlKey && e.key === 'z') {
-        e.preventDefault();
-        if (canUndo) {
-            undo();
-        }
-    }
-    
-    // Ctrl+Y для повтора
-    if (e.ctrlKey && e.key === 'y') {
-        e.preventDefault();
-        if (canRedo) {
-            redo();
-        }
-    }
-});
-
-// Функция сохранения текущего состояния холста в историю
-function saveToHistory() {
-    // Сохраняем состояние через WebSocket для синхронизации с сервером
-    // Создаем контрольную точку для возможности отмены
-    markUndoPoint();
-}
-
-// Функция для отмены действия (шаг назад)
-function undo() {
-    if (canUndo) {
-        // Отправляем запрос на отмену серверу
-        ws.send(JSON.stringify({
-            type: 'undo',
-            boardCode: boardCode,
-            userId: userId
-        }));
-        
-        // Временно блокируем кнопку до получения ответа от сервера
-        canUndo = false;
-        updateUndoRedoButtons();
-    }
-}
-
-// Функция для повтора действия (шаг вперед)
-function redo() {
-    if (canRedo) {
-        // Отправляем запрос на повтор серверу
-        ws.send(JSON.stringify({
-            type: 'redo',
-            boardCode: boardCode,
-            userId: userId
-        }));
-        
-        // Временно блокируем кнопку до получения ответа от сервера
-        canRedo = false;
-        updateUndoRedoButtons();
-    }
-}
-
-// Обновление состояния кнопок отмены/повтора
-function updateUndoRedoButtons() {
-    const undoBtn = document.getElementById('undoBtn');
-    const redoBtn = document.getElementById('redoBtn');
-    
-    if (undoBtn && redoBtn) {
-        undoBtn.disabled = !canUndo;
-        redoBtn.disabled = !canRedo;
-        
-        // Визуальное обновление состояния кнопок
-        if (canUndo) {
-            undoBtn.style.opacity = "1";
-            undoBtn.style.cursor = "pointer";
-        } else {
-            undoBtn.style.opacity = "0.5";
-            undoBtn.style.cursor = "not-allowed";
-        }
-        
-        if (canRedo) {
-            redoBtn.style.opacity = "1";
-            redoBtn.style.cursor = "pointer";
-        } else {
-            redoBtn.style.opacity = "0.5";
-            redoBtn.style.cursor = "not-allowed";
-        }
-    }
-}
-
-// Функция для сохранения текущего состояния перед действием
-function markUndoPoint() {
-    // Активируем возможность отмены после любого действия
-    canUndo = true;
-    canRedo = false; // Сбрасываем возможность повтора
-    updateUndoRedoButtons();
-}

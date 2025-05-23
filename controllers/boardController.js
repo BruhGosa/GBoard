@@ -1,5 +1,20 @@
 const boardModel = require('../models/board');
 const logger = require('../utils/logger');
+const WebSocket = require('ws');
+const { getWss, broadcastUsersList } = require('./wsController');
+const { pool } = require('../models/db');
+
+// Проверка существования пользователя
+async function checkUserExists(userId) {
+    const userExists = await pool.query('SELECT 1 FROM "user" WHERE id = $1', [userId]);
+    return userExists.rows.length > 0;
+}
+
+// Получение информации о доске по ID
+async function getBoardById(boardId) {
+    const result = await pool.query('SELECT * FROM boards WHERE id = $1', [boardId]);
+    return result.rows[0];
+}
 
 // Создание новой доски
 async function createBoard(req, res) {
@@ -97,9 +112,45 @@ async function updateBoardAccess(req, res) {
             await boardModel.removeUserConnection(userId, boardInfo.board_id);
         }
 
+        // Получаем экземпляр WebSocket-сервера
+        const wss = getWss();
+
+        // Отправляем уведомление через WebSocket пользователю, чьи права были изменены
+        if (wss && wss.clients) {
+            if (isBanned !== undefined && isBanned) {
+                // Если пользователя забанили, отправляем сообщение о бане
+                wss.clients.forEach(client => {
+                    if (client.userId == userId && client.boardCode === boardCode && 
+                        client.readyState === WebSocket.OPEN) {
+                        client.send(JSON.stringify({ 
+                            type: 'banned' 
+                        }));
+                    }
+                });
+            } else {
+                // Если изменили права доступа, отправляем обновление
+                wss.clients.forEach(client => {
+                    if (client.userId == userId && client.boardCode === boardCode && 
+                        client.readyState === WebSocket.OPEN) {
+                        client.send(JSON.stringify({ 
+                            type: 'access_update',
+                            canDraw: canDraw
+                        }));
+                    }
+                });
+            }
+        } else {
+            logger.warn('WebSocket server instance not available');
+        }
+
         // Получаем обновленные списки пользователей
         const allUsers = await boardModel.getBoardUsers(boardCode);
         const onlineUsers = await boardModel.getOnlineUsers(boardCode);
+
+        // Отправляем обновленные списки пользователей всем клиентам
+        if (wss && broadcastUsersList) {
+            broadcastUsersList(wss, boardCode, onlineUsers, allUsers);
+        }
 
         res.json({ 
             success: true,
@@ -110,20 +161,6 @@ async function updateBoardAccess(req, res) {
         logger.error('Error updating board access:', err);
         res.status(500).json({ error: 'Ошибка сервера при обновлении прав доступа' });
     }
-}
-
-// Проверка существования пользователя
-async function checkUserExists(userId) {
-    const { pool } = require('../models/db');
-    const userExists = await pool.query('SELECT 1 FROM "user" WHERE id = $1', [userId]);
-    return userExists.rows.length > 0;
-}
-
-// Получение информации о доске по ID
-async function getBoardById(boardId) {
-    const { pool } = require('../models/db');
-    const result = await pool.query('SELECT * FROM boards WHERE id = $1', [boardId]);
-    return result.rows[0];
 }
 
 // Отрисовка страницы доски
